@@ -1,0 +1,287 @@
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Samuel Bilionário - IA Ruuyter</title>
+<style>
+  body {
+    background: linear-gradient(135deg, #1b1b1b, #3a2f00);
+    color: #d4af37;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    margin: 0;
+    padding: 0;
+  }
+  header {
+    background: #2e2b00;
+    padding: 1rem 2rem;
+    font-size: 1.5rem;
+    font-weight: 700;
+    text-align: center;
+    letter-spacing: 3px;
+    color: #fff;
+    box-shadow: 0 4px 12px rgba(212,175,55,0.8);
+  }
+  #chat-container {
+    position: fixed;
+    bottom: 1rem;
+    right: 1rem;
+    width: 320px;
+    max-height: 420px;
+    background: #252200;
+    border-radius: 12px;
+    box-shadow: 0 0 12px #d4af37;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    font-size: 0.9rem;
+  }
+  #chat-messages {
+    flex: 1;
+    padding: 1rem;
+    overflow-y: auto;
+    color: #eee;
+  }
+  #chat-input-area {
+    display: flex;
+    border-top: 1px solid #d4af37;
+  }
+  #chat-input {
+    flex: 1;
+    padding: 0.75rem 1rem;
+    border: none;
+    font-size: 1rem;
+    background: #3a3200;
+    color: #fff;
+    outline: none;
+  }
+  #chat-send-btn {
+    background: #d4af37;
+    border: none;
+    padding: 0 1.2rem;
+    cursor: pointer;
+    font-weight: 700;
+    color: #111;
+    transition: background 0.3s ease;
+  }
+  #chat-send-btn:hover {
+    background: #fff;
+  }
+  #start-earn-btn {
+    position: fixed;
+    top: 1rem;
+    right: 1rem;
+    background: linear-gradient(45deg, #d4af37, #bfa75a);
+    border: none;
+    padding: 1rem 1.5rem;
+    font-weight: 700;
+    color: #111;
+    border-radius: 50px;
+    cursor: pointer;
+    box-shadow: 0 0 10px #d4af37;
+    z-index: 1000;
+    transition: background 0.3s ease;
+  }
+  #start-earn-btn:hover {
+    background: linear-gradient(45deg, #fff, #e6c85d);
+  }
+  /* Modal */
+  #earn-modal {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.85);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 1500;
+  }
+  #earn-modal[aria-hidden="false"] {
+    display: flex;
+  }
+  #earn-modal-content {
+    background: #222;
+    border-radius: 12px;
+    padding: 2rem;
+    max-width: 450px;
+    width: 90%;
+    color: #eee;
+    box-shadow: 0 0 20px #bfa75a;
+    position: relative;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  }
+  #earn-modal-content h2, #earn-modal-content h3 {
+    color: #d4af37;
+    margin-bottom: 1rem;
+  }
+  #earn-modal-content ul {
+    list-style: none;
+    margin-bottom: 1rem;
+  }
+  #earn-modal-content ul li {
+    margin-bottom: 0.7rem;
+  }
+  #earn-modal-content ul li a {
+    color: #bfa75a;
+    text-decoration: none;
+    font-weight: 600;
+  }
+  #earn-modal-content ul li a:hover {
+    text-decoration: underline;
+  }
+  #modal-picpay-qr {
+    max-width: 150px;
+    display: block;
+    margin: 0 auto 1rem auto;
+    cursor: pointer;
+  }
+  #close-modal-btn {
+    position: absolute;
+    top: 12px;
+    right: 16px;
+    background: transparent;
+    border: none;
+    font-size: 2rem;
+    color: #d4af37;
+    cursor: pointer;
+    font-weight: 700;
+  }
+</style>
+</head>
+<body>
+
+<header>Samuel Bilionário - IA Ruuyter</header>
+
+<button id="start-earn-btn" title="Começar a Ganhar Agora">💰 Começar a Ganhar Agora</button>
+
+<div id="earn-modal" aria-hidden="true">
+  <div id="earn-modal-content">
+    <button id="close-modal-btn" aria-label="Fechar modal">×</button>
+    <h2>Ofertas e Links para Ganhar Dinheiro</h2>
+    <ul id="affiliate-links"></ul>
+    <h3>Pagamento Fácil</h3>
+    <p>Use o QR Code PicPay para receber ou enviar pagamentos:</p>
+    <img src="https://upload.wikimedia.org/wikipedia/commons/8/8a/PicPay_logo.png" alt="QR Code PicPay" id="modal-picpay-qr" />
+    <p><small>Dica da IA Ruuyter: Compartilhe esses links nas suas redes sociais para aumentar seus ganhos!</small></p>
+  </div>
+</div>
+
+<!-- Chat IA Ruuyter -->
+<div id="chat-container">
+  <div id="chat-messages"></div>
+  <div id="chat-input-area">
+    <input id="chat-input" placeholder="Fale com a IA Ruuyter..." autocomplete="off" />
+    <button id="chat-send-btn">Enviar</button>
+  </div>
+</div>
+
+<script>
+  // === Modal de vendas ===
+  const startEarnBtn = document.getElementById('start-earn-btn');
+  const earnModal = document.getElementById('earn-modal');
+  const closeModalBtn = document.getElementById('close-modal-btn');
+  const affiliateLinksList = document.getElementById('affiliate-links');
+
+  const affiliateLinks = [
+    { name: "Shopee - Produtos em alta", url: "https://shopee.com.br/afiliado?utm_source=seusite" },
+    { name: "Amazon - Eletrônicos", url: "https://amazon.com.br/afiliado?utm_source=seusite" },
+    { name: "Hotmart - Cursos lucrativos", url: "https://hotmart.com/afiliado?utm_source=seusite" },
+    { name: "Binance - Criptomoedas", url: "https://binance.com/afiliado?utm_source=seusite" },
+    { name: "Quotex - Opções Binárias", url: "https://quotex.com/afiliado?utm_source=seusite" }
+  ];
+
+  function loadAffiliateLinks() {
+    affiliateLinksList.innerHTML = '';
+    affiliateLinks.forEach(link => {
+      const li = document.createElement('li');
+      li.innerHTML = `<a href="${link.url}" target="_blank" rel="noopener noreferrer">${link.name}</a>`;
+      affiliateLinksList.appendChild(li);
+    });
+  }
+
+  startEarnBtn.addEventListener('click', () => {
+    loadAffiliateLinks();
+    earnModal.setAttribute('aria-hidden', 'false');
+    addChatMessage("IA Ruuyter diz: Compartilhe esses links nas suas redes para multiplicar seus ganhos!");
+  });
+
+  closeModalBtn.addEventListener('click', () => {
+    earnModal.setAttribute('aria-hidden', 'true');
+  });
+
+  earnModal.addEventListener('click', e => {
+    if (e.target === earnModal) earnModal.setAttribute('aria-hidden', 'true');
+  });
+
+  // === Chat IA Ruuyter ===
+  const chatMessages = document.getElementById('chat-messages');
+  const chatInput = document.getElementById('chat-input');
+  const chatSendBtn = document.getElementById('chat-send-btn');
+
+  // Função para adicionar mensagens ao chat
+  function addChatMessage(text, isUser = false) {
+    const msg = document.createElement('div');
+    msg.textContent = text;
+    msg.style.padding = "0.5rem 1rem";
+    msg.style.marginBottom = "0.3rem";
+    msg.style.borderRadius = "12px";
+    msg.style.maxWidth = "85%";
+    msg.style.wordWrap = "break-word";
+    if (isUser) {
+      msg.style.backgroundColor = "#d4af37";
+      msg.style.color = "#111";
+      msg.style.alignSelf = "flex-end";
+    } else {
+      msg.style.backgroundColor = "#3a3200";
+      msg.style.color = "#eee";
+      msg.style.alignSelf = "flex-start";
+    }
+    chatMessages.appendChild(msg);
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+  }
+
+  // Simulação básica da IA Ruuyter respondendo (você pode conectar API GPT aqui depois)
+  function ruuyterResponse(input) {
+    input = input.toLowerCase();
+
+    if (input.includes("ganhar dinheiro") || input.includes("vender")) {
+      return "Para ganhar dinheiro rápido, compartilhe os links que estão no botão 💰 no topo. Posso ajudar a criar mensagens para suas redes!";
+    }
+    if (input.includes("ajuda") || input.includes("dúvida")) {
+      return "Estou aqui para ajudar! Pergunte sobre vendas, produtos ou como usar o site.";
+    }
+    if (input.includes("picpay")) {
+      return "Você pode receber pagamentos pelo QR PicPay disponível no modal de vendas.";
+    }
+    if (input.includes("oferta") || input.includes("produto")) {
+      return "As melhores ofertas estão disponíveis no botão 💰 no topo. Aproveite para divulgar!";
+    }
+    if (input.trim() === "") {
+      return "Por favor, escreva algo para que eu possa ajudar.";
+    }
+    return "Ruuyter diz: Vou aprender mais para ajudar você ainda melhor!";
+  }
+
+  chatSendBtn.addEventListener('click', () => {
+    const userText = chatInput.value.trim();
+    if (!userText) return;
+    addChatMessage(userText, true);
+    chatInput.value = "";
+
+    // Resposta da IA com delay para parecer natural
+    setTimeout(() => {
+      const reply = ruuyterResponse(userText);
+      addChatMessage(reply, false);
+    }, 700);
+  });
+
+  chatInput.addEventListener('keydown', e => {
+    if (e.key === 'Enter') chatSendBtn.click();
+  });
+
+  // Mensagem inicial da IA
+  addChatMessage("IA Ruuyter ativa! Pergunte-me como começar a ganhar dinheiro.", false);
+</script>
+
+</body>
+</html>
